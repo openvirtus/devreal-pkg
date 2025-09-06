@@ -1,0 +1,19 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_senpai
+#h:
+#h: IRC client for soju.
+##:
+. hmain
+. vcd
+. getsrc-git
+. hgmake
+build_senpai() {
+    local u='https://git.sr.ht/~delthas/senpai'
+    local d="$(getsrc_git "${u},${SENPAI_VERSION}")"
+    vcd + "${d}"
+    hgmake clean all install
+    vcd -
+}
+SENPAI_VERSION="${SENPAI_VERSION:-${V:-v0.4.1}}"
+hmain -f "build_senpai" -e build_senpai "$@"

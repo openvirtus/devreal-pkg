@@ -1,0 +1,16 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_pdpmake
+##:
+. hmain
+. getsrc-git
+. vcd
+build_pdpmake() {
+    local url="https://github.com/rmyorston/pdpmake.git"
+    local ver="${PDPMAKE_VERSION:-${V:-2.0.3}}"
+    vcd + "$(getsrc_git "${url},${ver}")"
+    hgmake clean all install
+    vcd -
+}
+# --------------------------------------------------------------------
+hmain -f build_pdpmake -e build_pdpmake "$@"

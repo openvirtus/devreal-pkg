@@ -1,0 +1,104 @@
+#!/bin/sh -e
+##:
+#h: Usage: rb-build-devreal [ -V | -r | -t PLAT -b PKGS... ]
+#h:
+#h: Build and release devreal.org packages.
+##:
+rb_build_devreal() {
+    local OPTIND=1 optopt pkg res opt_r= opt_t= opt_b=
+    
+    # Parse command line arguments.
+    while getopts "lt:r" optopt; do
+        case $optopt in
+            t)  opt_t="${opt_t} ${OPTARG}" ;;
+            r)  opt_r=y;;
+            b)  opt_b=y;;
+            \?) return 1;;
+        esac
+    done
+    shift $(( $OPTIND - 1 ))
+
+    # Build packages.
+    if test -n "${opt_b}"; then
+        if test ! -n "${opt_t}"; then
+            cat <<-EOF
+		Tools: lin-x64, lin-a64
+		EOF
+            return 0
+        fi
+        if test ! -n "$1"; then
+            cat <<-EOF
+		go: soju, senpai
+		c: oksh, pdpmake
+		EOF
+            return 0
+        fi
+        rm -f "${DEVREAL_RELFILE}"
+        for HT_TOOLCHAIN in ${opt_t}; do
+            for pkg in "$@"; do
+                case "${pkg}" in soju|all)    hrelease_go -N soju    -R v0.9.0 -e GETSRC_FORCE=y ./net/build_soju      ;; esac
+                case "${pkg}" in senpai|all)  hrelease_go -N senpai  -R v0.4.1 -e GETSRC_FORCE=y ./net/build_senpai    ;; esac
+                case "${pkg}" in oksh|all)    hrelease_c  -N oksh    -R 7.7    -e GETSRC_FORCE=y ./shells/build_oksh   ;; esac
+                case "${pkg}" in pdpmake|all) hrelease_c  -N pdpmake -R 2.0.3  -e GETSRC_FORCE=y ./devel/build_pdpmake ;; esac
+            done
+        done
+    fi
+
+    # Release packages.
+    if test -n "${opt_r}"; then
+        echo "Release: ${DEVREAL_RELEASE}"
+        echo ""
+        cat "${DEVREAL_RELFILE}"
+        echo ""
+        echo -n "All ok? y/N: "
+        read -r res
+        if test @"${res}" = @"y"; then
+            gh release create "v${DEVREAL_RELEASE}" "$(cat "${DEVREAL_RELFILE}")"
+        fi
+    fi
+}
+rb_build_devreal_show_variables() {
+    cat <<-EOF
+	DEVREAL_GH_TOKEN  : ${DEVREAL_GH_TOKEN}
+	DEVREAL_DIRECTORY : ${DEVREAL_DIRECTORY}
+	DEVREAL_RELFILE   : ${DEVREAL_RELFILE}
+	DEVREAL_RELEASE   : ${DEVREAL_RELEASE}
+	EOF
+}
+rb_build_devreal_calc_variables() {
+    DEVREAL_GH_TOKEN="${DEVREAL_GH_TOKEN:-${GH_TOKEN}}"
+    DEVREAL_DIRECTORY="${DEVREAL_DIRECTORY:-$(readlink -f "$(dirname "$0")/..")}"
+    DEVREAL_RELEASE="${DEVREAL_RELEASE:-$(date +%Y-%m-%d--%H)}"
+    export DEVREAL_RELFILE="${DEVREAL_RELFILE:-${TEMP:-/tmp}/relfile}"
+}
+# --------------------------------------------------------------------
+hrelease_go() {
+    local pwd="$(pwd)"
+    cd "${DEVREAL_DIRECTORY}"
+    case "${HT_TOOLCHAIN}" in
+        lin-a64) hrelease -t aarch64-linux-gnu "$@" ;;
+        lin-x64) hrelease -t x86_64-linux-gnu  "$@" ;;
+        *)       echo "error: Unsupported: ${HT_TOOLCHAIN}" >&2; return 1;;
+    esac
+    cd "${pwd}"
+}
+hrelease_c() {
+    local pwd="$(pwd)"
+    cd "${DEVREAL_DIRECTORY}"
+    case "${HT_TOOLCHAIN}" in
+        lin-a64) hrelease -t aarch64-linux-musl "$@" ;;
+        lin-x64) hrelease -t x86_64-linux-musl  "$@" ;;
+        *)       echo "error: Unsupported: ${HT_TOOLCHAIN}" >&2; return 1;;
+    esac
+    cd "${pwd}"
+}
+# --------------------------------------------------------------------
+rb_build_devreal_calc_variables
+if test @"${0##*/}" = @"rb-build-devreal"; then
+    export MSYS_NO_PATHCONV=1
+    case "${1}" in
+        -h|--help) sed -n 's/^ *#h: \{0,1\}//p' "$0";;
+        -V)  rb_build_devreal_show_variables; exit 0;;
+        *)   rb_build_devreal "$@"; exit 0;;
+    esac
+fi

@@ -1,0 +1,24 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_oksh
+##:
+. hmain
+. getsrc-git
+. vcd
+build_oksh() {
+    local url="https://github.com/ibara/oksh.git"
+    local src=$(getsrc_git "${url},${OKSH_VERSION}")
+    vcd + "${src}"
+    env CC="${CC:-gcc}" \
+        CFLAGS="${CFLAGS} -DHAVE_TIMERADD -DHAVE_TIMERSUB -DHAVE_TIMERCLEAR -Wno-implicit-function-declaration" \
+        LDFLAGS="${LDFLAGS}" \
+        ./configure --no-thanks
+    sed -i 's|-c -s -m|-c -m|' Makefile
+    make clean
+    make
+    ${HBUILD_SUDO:-sudo} make PREFIX="${HBUILD_PREFIX}" DESTDIR="${HBUILD_DESTDIR}" install
+    vcd -
+}
+# --------------------------------------------------------------------
+OKSH_VERSION="${OKSH_VERSION:-oksh-${V:-7.7}}"
+hmain -f build_oksh -e build_oksh "$@"

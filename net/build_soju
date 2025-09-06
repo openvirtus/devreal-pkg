@@ -1,0 +1,20 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_soju
+#h:
+#h: User-friendly IRC bouncer.
+##:
+. hmain
+. vcd
+. getsrc-git
+. hgmake
+build_soju() {
+    local u='https://codeberg.org/emersion/soju.git'
+    local d="$(getsrc_git "${u},${SOJU_VERSION}")"
+    vcd + "${d}"
+    echo "Version: ${SOJU_VERSION}"
+    hgmake clean all install
+    vcd -
+}
+SOJU_VERSION="${SOJU_VERSION:-${V:-v0.9.0}}"
+hmain -f "build_soju" -e build_soju "$@"
