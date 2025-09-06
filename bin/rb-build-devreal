@@ -33,7 +33,7 @@ rb_build_devreal() {
 		EOF
             return 0
         fi
-        rm -f "${DEVREAL_RELFILE}"
+        rm -f "${HRELEASE_OUTPUT}"
         for HT_TOOLCHAIN in ${opt_t}; do
             for pkg in "$@"; do
                 case "${pkg}" in soju|all)    hrelease_go -N soju    -R v0.9.0 -e GETSRC_FORCE=y ./net/build_soju      ;; esac
@@ -48,13 +48,13 @@ rb_build_devreal() {
     if test -n "${opt_r}"; then
         echo "Release: ${DEVREAL_RELEASE}"
         echo ""
-        cat "${DEVREAL_RELFILE}"
+        cat "${HRELEASE_OUTPUT}"
         echo ""
         echo -n "All ok? y/N: "
         read -r res
         if test @"${res}" = @"y"; then
-            for rel in $(sed -n 's|.*/\([^_]*\).*|\1|p' "${DEVREAL_RELFILE}" | sort -u); do
-                tar="$(grep "/${rel}_.*" "${DEVREAL_RELFILE}")"
+            for rel in $(sed -n 's|.*/\([^_]*\).*|\1|p' "${HRELEASE_OUTPUT}" | sort -u); do
+                tar="$(grep "/${rel}_.*" "${HRELEASE_OUTPUT}")"
                 echo "== ${rel}"
                 echo "${tar}"
                 GH_TOKEN="${DEVREAL_GH_TOKEN}" gh release create --notes '' "${name}" ${tar}
@@ -64,17 +64,15 @@ rb_build_devreal() {
 }
 rb_build_devreal_show_variables() {
     cat <<-EOF
-	DEVREAL_GH_TOKEN  : ${DEVREAL_GH_TOKEN}
-	DEVREAL_DIRECTORY : ${DEVREAL_DIRECTORY}
-	DEVREAL_RELFILE   : ${DEVREAL_RELFILE}
-	DEVREAL_RELEASE   : ${DEVREAL_RELEASE}
+	DEVREAL_GH_TOKEN    : ${DEVREAL_GH_TOKEN}
+	DEVREAL_DIRECTORY   : ${DEVREAL_DIRECTORY}
+	HRELEASE_OUTPUT (f) : ${HRELEASE_OUTPUT}
 	EOF
 }
 rb_build_devreal_calc_variables() {
     DEVREAL_GH_TOKEN="${DEVREAL_GH_TOKEN:-${GH_TOKEN}}"
     DEVREAL_DIRECTORY="${DEVREAL_DIRECTORY:-$(readlink -f "$(dirname "$0")/..")}"
-    DEVREAL_RELEASE="${DEVREAL_RELEASE:-$(date +%Y-%m-%d--%H)}"
-    export DEVREAL_RELFILE="${DEVREAL_RELFILE:-${TEMP:-/tmp}/relfile}"
+    export HRELEASE_OUTPUT="${TEMP:-/tmp}/relfile"
 }
 # --------------------------------------------------------------------
 hrelease_go() {
