@@ -5,7 +5,7 @@
 #h: Build and release devreal.org packages.
 ##:
 rb_build_devreal() {
-    local OPTIND=1 optopt pkg res opt_r= opt_t= opt_b=
+    local OPTIND=1 optopt pkg res name rel opt_r= opt_t= opt_b=
     
     # Parse command line arguments.
     while getopts "lt:r" optopt; do
@@ -53,7 +53,12 @@ rb_build_devreal() {
         echo -n "All ok? y/N: "
         read -r res
         if test @"${res}" = @"y"; then
-            gh release create "v${DEVREAL_RELEASE}" "$(cat "${DEVREAL_RELFILE}")"
+            for rel in $(sed -n 's|.*/\([^_]*\).*|\1|p' "${DEVREAL_RELFILE}" | sort -u); do
+                tar="$(grep "/${rel}_.*" "${DEVREAL_RELFILE}")"
+                echo "== ${rel}"
+                echo "${tar}"
+                GH_TOKEN="${DEVREAL_GH_TOKEN}" gh release create --notes '' "${name}" ${tar}
+            done
         fi
     fi
 }
