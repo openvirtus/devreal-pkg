@@ -1,0 +1,13 @@
+R ; devreal ; ./upload.sh -n "${NAME}" ${DESCRIPTION:+ -d "${DESCRIPTION}"} "$@"
+E ; T_C=aarch64-linux-musl,x86_64-linux-musl,x86_64-w64-mingw32
+E ; T_C_POSIX=aarch64-linux-musl,x86_64-linux-musl
+E ; T_GO=aarch64-linux-gnu,x86_64-linux-gnu,x86_64-w64-mingw32
+E ; T_GO_POSIX=aarch64-linux-gnu,x86_64-linux-gnu
+P ; soju     ; v0.9.0  ; devreal ; An IRC bouncer (go)     ; hrelease -N soju     -t "$T_GO_POSIX"        -R "$V" ./net/build_soju
+P ; senpai   ; v0.4.1  ; devreal ;                         ; hrelease -N senpai   -t "$T_GO_POSIX"        -R "$V" ./net/build_senpai
+P ; oksh     ; 7.7     ; devreal ; A POSIX shell. (c)      ; hrelease -N oksh     -t "$T_C_POSIX"         -R "$V" ./shells/build_oksh
+P ; pdpmake  ; 2.0.3   ; devreal ;                         ; hrelease -N pdpmake  -t "$T_C_POSIX"         -R "$V" ./devel/build_pdpmake
+P ; recutils ; 1.9     ; devreal ;                         ; hrelease -N recutils -t "x86_64-w64-mingw32" -R "$V" ./databases/build_recutils
+P ; msmtp    ; 1.8.31  ; devreal ;                         ; hrelease -N msmtp    -t "x86_64-w64-mingw32" -R "$V" ./mail/build_msmtp
+P ; socat    ; 1.8.0.3 ; devreal ;                         ; hrelease -N socat    -t "$T_C_POSIX"         -R "$V" ./net/build_socat
+P ; godit    ; master  ; devreal ; Godit text editor. (go) ; hrelease -N godit    -t "$T_GO"              -R "$V" ./editors/build_godit
