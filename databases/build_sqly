@@ -1,0 +1,21 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_sqly
+##:
+. hmain
+. vcd
+. vrun
+. getsrc-git
+build_sqly() {
+    local i="${HBUILD_DESTDIR}${HBUILD_PREFIX:-/usr/local}"
+    local b="${BUILDDIR:-./build}"
+    vcd + "$(getsrc_git "${SQLY_R},${V:-${SQLY_V}}")"
+    mkdir -p "${b}"
+    vrun go build -o "${b}/sqly${EXE}" main.go
+    vrun ${HBUILD_SUDO:-sudo} mkdir -p "${i}/bin"
+    vrun ${HBUILD_SUDO:-sudo} cp "${b}/sqly${EXE}" "${i}/bin"
+    vcd -
+}
+: ${SQLY_R:=https://github.com/harkaitz/fork-sqly.git}
+: ${SQLY_V:=harkaitz}
+hmain -f "build_sqly" -e build_sqly "$@"

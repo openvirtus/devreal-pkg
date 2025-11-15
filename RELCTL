@@ -11,3 +11,4 @@ P ; recutils ; 1.9     ; devreal ;                         ; hrelease -N recutil
 P ; msmtp    ; 1.8.31  ; devreal ;                         ; hrelease -N msmtp    -t "x86_64-w64-mingw32" -R "$V" ./mail/build_msmtp
 P ; socat    ; 1.8.0.3 ; devreal ;                         ; hrelease -N socat    -t "$T_C_POSIX"         -R "$V" ./net/build_socat
 P ; godit    ; 0.1     ; devreal ; Godit text editor. (go) ; hrelease -N godit    -t "$T_GO" -R "master"          ./editors/build_godit
+P ; sqly     ; 0.1-h   ; devreal ; SQL against CSV.        ; hrelease -N sqly     -t "$T_GO" -R "harkaitz"        ./databases/build_sqly
