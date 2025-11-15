@@ -1,0 +1,24 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_socat { download | install }
+#h:
+#h: Relay for bidirectional data transfer between data channels.
+##:
+. hmain
+. vcd
+. getsrc-git
+. hautotools
+build_socat() {
+    if ! which yodl >/dev/null 2>&1; then
+        echo "error: yodl: Program not found." >&2
+        return 1
+    fi
+    vcd + "$(getsrc_git "$SOCAT_R","tag-${V:-$SOCAT_V}")"
+    autoconf
+    hautotools all
+    vcd -
+}
+: ${SOCAT_R:=https://repo.or.cz/socat.git}
+: ${SOCAT_V:=1.8.0.3}
+# --------------------------------------------------------------------
+hmain -f "build_socat" -e build_socat "$@"
