@@ -1,0 +1,23 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_godit
+#h:
+#h: Godit text editor.
+##:
+. hmain
+. vcd
+. vrun
+. getsrc-git
+build_godit() {
+    local i="${HBUILD_DESTDIR}${HBUILD_PREFIX:-/usr/local}"
+    vcd + "$(getsrc_git "${GODIT_R},${V:-${GODIT_V}}")"
+    go mod init github.com/nsf/godit || true
+    go mod tidy || true
+    go build
+    vrun ${HBUILD_SUDO:-sudo} mkdir -p "${i}/bin"
+    vrun ${HBUILD_SUDO:-sudo} cp -v "godit${EXE}" "${i}/bin"
+    vcd -
+}
+: ${GODIT_R:=https://github.com/nsf/godit.git}
+: ${GODIT_V:=master}
+hmain -f "build_godit" -e build_godit "$@"

@@ -1,0 +1,21 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_recutils
+#h:
+#h: GNU Recutils.
+##:
+. vcd
+. hmain
+. getsrc-tar
+. hautotools
+build_recutils() {
+    local url="http://deb.debian.org/debian/pool/main/r/recutils/recutils_${V:-${RECUTILS_V}}.orig.tar.gz"
+    vcd + "$(getsrc_tar "${url}")"
+    CC="${CC:-gcc} -Wno-implicit-function-declaration"
+    hautotools clean
+    hautotools all --disable-nls --enable-static
+    vcd -
+}
+# --------------------------------------------------------------------
+RECUTILS_V="${RECUTILS_V:-1.9}"
+hmain -f "build_recutils" -e build_recutils "$@"

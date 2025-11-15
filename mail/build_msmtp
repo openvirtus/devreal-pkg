@@ -1,0 +1,19 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_msmtp
+##:
+. hmain
+. getsrc-git
+. vcd
+. hautotools
+build_msmtp() {
+    vcd + "$(getsrc_git "${MSMTP_R},msmtp-${V:-${MSMTP_V}}")"
+    CFLAGS="${CFLAGS} -Wno-incompatible-pointer-types"
+    hautotools autogen
+    hautotools all
+    vcd -
+}
+: ${MSMTP_R:=https://git.marlam.de/git/msmtp.git}
+: ${MSMTP_V:=1.8.32}
+# --------------------------------------------------------------------
+hmain -f 'build_msmtp' -e build_msmtp "$@"
