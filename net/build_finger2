@@ -1,0 +1,25 @@
+#!/bin/sh -e
+##:
+#h: Usage: build_finger2
+#h:
+#h: A customizable Go implementation of the finger protocol.
+##:
+. hmain
+. vcd
+. vrun
+. getsrc-git
+build_finger2() {
+    local p="${HBUILD_DESTDIR}${HBUILD_PREFIX:-/usr/local}"
+    local b="${BUILDDIR:-.}/objects"
+    vcd + "$(getsrc_git -n finger2 "${FINGER2_R}","${V:-${FINGER2_V}}")"
+    mkdir -p "${b}"
+    vrun go build -o ${b}/finger${EXE}  finger.go passwd.go
+    vrun go build -o ${b}/fingerd${EXE} fingerd.go
+    vrun ${HBUILD_SUDO:-sudo} install -d "${p}/bin"
+    vrun ${HBUILD_SUDO:-sudo} install -m755 ${b}/finger${EXE} ${b}/fingerd${EXE} "${p}/bin"
+    vcd -
+}
+: ${FINGER2_R:=https://git.sr.ht/~striker/finger}
+: ${FINGER2_V:=main}
+# --------------------------------------------------------------------
+hmain -f "build_finger2" -e build_finger2 "$@"

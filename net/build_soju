@@ -6,15 +6,54 @@
 ##:
 . hmain
 . vcd
+. vrun
 . getsrc-git
 . hgmake
 build_soju() {
+    local p="${HBUILD_DESTDIR}${HBUILD_PREFIX:-/usr/local}"
+    local e="${HBUILD_DESTDIR}/etc"
     local u='https://codeberg.org/emersion/soju.git'
     local d="$(getsrc_git "${u},${SOJU_VERSION}")"
     vcd + "${d}"
     echo "Version: ${SOJU_VERSION}"
+    sed -i '
+        /cp -f config.in.*\$(config_path)$/s|$|.example|
+    ' Makefile
     hgmake clean all install
+    vrun ${HBUILD_SUDO:-sudo} install -d "${p}/share/doc/soju"
+    vrun ${HBUILD_SUDO:-sudo} tee "${p}/share/doc/soju/SETUP.md" <<-EOF >/dev/null
+	# SOJU POST INSTALLATION
+	
+	Create empty database:
+	
+	    $ sudo sqlite3 /var/lib/soju/main.db 'VACUUM;'
+	    $ e /etc/soju/config : db sqlite3 /var/lib/soju/main.db
+	
+	EOF
+    vrun ${HBUILD_SUDO:-sudo} install -d "${p}/lib/systemd/system"
+    vrun ${HBUILD_SUDO:-sudo} tee "${p}/lib/systemd/system/soju.service" <<-EOF >/dev/null
+	[Unit]
+	After=network.target
+	StartLimitIntervalSec=0
+	 
+	[Service]
+	Type=simple
+	Restart=always
+	RestartSec=1
+	User=root
+	ExecStart=${HBUILD_PREFIX:-/usr/local}/bin/soju
+	 
+	[Install]
+	WantedBy=multi-user.target
+	EOF
+    vrun ${HBUILD_SUDO:-sudo} install -d "${e}/sv/soju"
+    vrun ${HBUILD_SUDO:-sudo} tee "${e}/sv/soju/run" <<-EOF >/dev/null
+	#!/bin/sh
+	mkdir -p /run/soju
+	exec ${HBUILD_PREFIX:-/usr/local}/bin/soju > /var/log/soju.log 2>&1
+	EOF
+    vrun ${HBUILD_SUDO:-sudo} chmod 0766 "${e}/sv/soju/run"
     vcd -
 }
-SOJU_VERSION="${SOJU_VERSION:-${V:-v0.9.0}}"
+: ${SOJU_VERSION:=${V:-v0.9.0}}
 hmain -f "build_soju" -e build_soju "$@"
